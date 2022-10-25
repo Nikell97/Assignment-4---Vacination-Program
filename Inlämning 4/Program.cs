@@ -20,12 +20,12 @@ namespace Vaccination
             {
                 int option = ShowMenu("What do you want do do?", new[]
                 {
-                    "- Skapa prioritetsordning",
-                    "- Ändra antal vaccindoser",
-                    "- Ändra åldersgräns",
-                    "- Ändra indatafil",
-                    "- Ändra utdatafil",
-                    "- Avsluta"
+                    "Skapa prioritetsordning",
+                    "Ändra antal vaccindoser",
+                    "Ändra åldersgräns",
+                    "Ändra indatafil",
+                    "Ändra utdatafil",
+                    "Avsluta"
                 });
                 Console.Clear();
 
