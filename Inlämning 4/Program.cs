@@ -20,23 +20,22 @@ namespace Vaccination
         {
             CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 
-            string ageYesNo = "";
-            if (vaccinateAgeUnder18 == true)
-            {
-                ageYesNo = "Ja";
-            }
-            else
-            {
-                ageYesNo = "Nej";
-            }
-
-
+            
             Console.WriteLine("Välkommen!");
             Console.WriteLine();
 
             bool running = true;
             while (running)
             {
+                string ageYesNo = "";
+                if (Program.vaccinateAgeUnder18 == true)
+                {
+                    ageYesNo = "Ja";
+                }
+                else
+                {
+                    ageYesNo = "Nej";
+                }
                 Console.WriteLine();
                 Console.WriteLine("Antal tillgänliga vaccindoser: " + Program.dosesInStock);
                 Console.WriteLine("Vaccinering under 18 år: " + ageYesNo);
