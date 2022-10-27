@@ -3,22 +3,48 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection.Metadata;
+using System.IO;
+using System.Text;
 
 namespace Vaccination
 {
     public class Program
     {
+        public static int dosesInStock = 0;
+        public static bool vaccinateAgeUnder18 = false;
+        public static string inputDataPath = @"C:\Windows\Temp\PatientInfo.csv";
+        public static string outputDataPath = @"C:\Windows\Temp\VaccinationList.csv";
+
         public static void Main()
         {
             CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 
-            Console.WriteLine("Welcome!");
+            string ageYesNo = "";
+            if (vaccinateAgeUnder18 == true)
+            {
+                ageYesNo = "Ja";
+            }
+            else
+            {
+                ageYesNo = "Nej";
+            }
+
+
+            Console.WriteLine("Välkommen!");
             Console.WriteLine();
 
             bool running = true;
             while (running)
             {
-                int option = ShowMenu("What do you want do do?", new[]
+                Console.WriteLine();
+                Console.WriteLine("Antal tillgänliga vaccindoser: " + Program.dosesInStock);
+                Console.WriteLine("Vaccinering under 18 år: " + ageYesNo);
+                Console.WriteLine("Indatafil: " + Program.inputDataPath);
+                Console.WriteLine("Utdatafil: " + Program.outputDataPath);
+                Console.WriteLine();
+
+                int option = ShowMenu("Vad vill du göra?", new[]
                 {
                     "Skapa prioritetsordning",
                     "Ändra antal vaccindoser",
@@ -31,23 +57,48 @@ namespace Vaccination
 
                 if (option == 0) // Skapa prioritetsordning
                 {
-
+                    
                 }
                 else if (option == 1) // Ändra antal doser
                 {
-
+                    Console.WriteLine("Antal tillgänliga vaccindoser: " + Program.dosesInStock);
+                    Console.WriteLine();
+                    Console.WriteLine("Ange nytt antal doser: ");
+                    Program.dosesInStock = int.Parse(Console.ReadLine());
                 }
                 else if (option == 2) // Ändra åldersgräns
                 {
-
+                    int option2 = ShowMenu("Ska personer under 18 vaccineras?", new[]
+                    {
+                        "Ja",
+                        "Nej"
+                    });
+                    if (option2 == 0)
+                    {
+                        Program.vaccinateAgeUnder18 = true;
+                    }
+                    else if (option2 == 1)
+                    {
+                        Program.vaccinateAgeUnder18 = false;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Någonting gick fel, var god välj giltigt menyval");
+                    }
                 }
                 else if (option == 3) // Ändra indatafil
                 {
-
+                    Console.WriteLine("Indatafil: " + Program.inputDataPath);
+                    Console.WriteLine();
+                    Console.WriteLine("Ange ny sökväg: ");
+                    inputDataPath = Console.ReadLine();
                 }
                 else if (option == 4) // Ändra utdatafil
                 {
-
+                    Console.WriteLine("Utdatafil: " + Program.outputDataPath);
+                    Console.WriteLine();
+                    Console.WriteLine("Ange ny sökväg: ");
+                    outputDataPath = Console.ReadLine();
                 }
                 else if (option == 5) // Avsluta
                 {
@@ -55,7 +106,7 @@ namespace Vaccination
                 }
                 else
                 {
-                    Console.WriteLine("Please enter valid menu option.");
+                    Console.WriteLine("Någonting gick fel, var god välj giltigt menyval");
                 }
             }
         }
