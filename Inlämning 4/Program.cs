@@ -27,18 +27,9 @@ namespace Vaccination
             bool running = true;
             while (running)
             {
-                string ageYesNo = "";
-                if (Program.vaccinateAgeUnder18 == true)
-                {
-                    ageYesNo = "Ja";
-                }
-                else
-                {
-                    ageYesNo = "Nej";
-                }
                 Console.WriteLine();
                 Console.WriteLine("Antal tillgänliga vaccindoser: " + Program.dosesInStock);
-                Console.WriteLine("Vaccinering under 18 år: " + ageYesNo);
+                Console.WriteLine("Vaccinering under 18 år: " + DisplayVaccinationAgeOption(vaccinateAgeUnder18));
                 Console.WriteLine("Indatafil: " + Program.inputDataPath);
                 Console.WriteLine("Utdatafil: " + Program.outputDataPath);
                 Console.WriteLine();
@@ -121,6 +112,19 @@ namespace Vaccination
         {
             // Replace with your own code.
             return new string[0];
+        }
+        public static string DisplayVaccinationAgeOption(bool vaccinateUnder18)
+        {
+            string ageYesNo = "";
+            if (vaccinateUnder18 == true)
+            {
+                ageYesNo = "Ja";
+            }
+            else
+            {
+                ageYesNo = "Nej";
+            }
+            return ageYesNo;
         }
 
         public static int ShowMenu(string prompt, IEnumerable<string> options)
