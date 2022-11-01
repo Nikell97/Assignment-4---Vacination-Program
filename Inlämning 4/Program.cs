@@ -9,18 +9,26 @@ using System.Text;
 
 namespace Vaccination
 {
+    public class Patient
+    {
+        public string IDNumber;
+        public string FirstName;
+        public string LastName;
+        public int HealthCareWorker;
+        public int RiskGroup;
+        public int PreviouslyInfected;
+    }
     public class Program
     {
-        public static int dosesInStock = 0;
-        public static bool vaccinateAgeUnder18 = false;
         public static string inputDataPath = @"C:\Windows\Temp\PatientInfo.csv";
         public static string outputDataPath = @"C:\Windows\Temp\VaccinationList.csv";
 
         public static void Main()
         {
             CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+            int dosesInStock = 0;
+            bool vaccinateAgeUnder18 = false;
 
-            
             Console.WriteLine("Välkommen!");
             Console.WriteLine();
 
@@ -28,10 +36,10 @@ namespace Vaccination
             while (running)
             {
                 Console.WriteLine();
-                Console.WriteLine("Antal tillgänliga vaccindoser: " + Program.dosesInStock);
+                Console.WriteLine("Antal tillgänliga vaccindoser: " + dosesInStock);
                 Console.WriteLine("Vaccinering under 18 år: " + DisplayVaccinationAgeOption(vaccinateAgeUnder18));
-                Console.WriteLine("Indatafil: " + Program.inputDataPath);
-                Console.WriteLine("Utdatafil: " + Program.outputDataPath);
+                Console.WriteLine("Indatafil: " + inputDataPath);
+                Console.WriteLine("Utdatafil: " + outputDataPath);
                 Console.WriteLine();
 
                 int option = ShowMenu("Vad vill du göra?", new[]
@@ -45,18 +53,19 @@ namespace Vaccination
                 });
                 Console.Clear();
 
-                if (option == 0) // Skapa prioritetsordning
+                if (option == 0) // Create prioritization list
                 {
-                    
+                    string[] inputCSV = File.ReadAllLines(inputDataPath);
+                    CreateVaccinationOrder(inputCSV, dosesInStock, vaccinateAgeUnder18);
                 }
-                else if (option == 1) // Ändra antal doser
+                else if (option == 1) // Change number of doses
                 {
-                    Console.WriteLine("Antal tillgänliga vaccindoser: " + Program.dosesInStock);
+                    Console.WriteLine("Antal tillgänliga vaccindoser: " + dosesInStock);
                     Console.WriteLine();
                     Console.WriteLine("Ange nytt antal doser: ");
-                    Program.dosesInStock = int.Parse(Console.ReadLine());
+                    dosesInStock = int.Parse(Console.ReadLine());
                 }
-                else if (option == 2) // Ändra åldersgräns
+                else if (option == 2) // Change age limit
                 {
                     int option2 = ShowMenu("Ska personer under 18 vaccineras?", new[]
                     {
@@ -65,32 +74,32 @@ namespace Vaccination
                     });
                     if (option2 == 0)
                     {
-                        Program.vaccinateAgeUnder18 = true;
+                        vaccinateAgeUnder18 = true;
                     }
                     else if (option2 == 1)
                     {
-                        Program.vaccinateAgeUnder18 = false;
+                        vaccinateAgeUnder18 = false;
                     }
                     else
                     {
                         Console.WriteLine("Någonting gick fel, var god välj giltigt menyval");
                     }
                 }
-                else if (option == 3) // Ändra indatafil
+                else if (option == 3) // Change input data file path
                 {
-                    Console.WriteLine("Indatafil: " + Program.inputDataPath);
+                    Console.WriteLine("Indatafil: " + inputDataPath);
                     Console.WriteLine();
                     Console.WriteLine("Ange ny sökväg: ");
                     inputDataPath = Console.ReadLine();
                 }
-                else if (option == 4) // Ändra utdatafil
+                else if (option == 4) // Change output data file path
                 {
-                    Console.WriteLine("Utdatafil: " + Program.outputDataPath);
+                    Console.WriteLine("Utdatafil: " + outputDataPath);
                     Console.WriteLine();
                     Console.WriteLine("Ange ny sökväg: ");
                     outputDataPath = Console.ReadLine();
                 }
-                else if (option == 5) // Avsluta
+                else if (option == 5) // End program
                 {
                     running = false;
                 }
@@ -108,9 +117,31 @@ namespace Vaccination
         // input: the lines from a CSV file containing population information
         // doses: the number of vaccine doses available
         // vaccinateChildren: whether to vaccinate people younger than 18
+        
         public static string[] CreateVaccinationOrder(string[] input, int doses, bool vaccinateChildren)
         {
-            // Replace with your own code.
+            List<string[]> splitCSVList = new List<string[]>();
+            List<Patient> patientList = new List<Patient>();
+
+            foreach (string p in input)
+            {
+                splitCSVList.Add(p.Split(','));
+            }
+            for (int i = 0; i < splitCSVList.Count; i++)
+            {
+                Patient patient = new Patient
+                {
+                    IDNumber = splitCSVList[i][0],
+                    LastName = splitCSVList[i][1],
+                    FirstName = splitCSVList[i][2],
+                    HealthCareWorker = int.Parse(splitCSVList[i][3]),
+                    RiskGroup = int.Parse(splitCSVList[i][4]),
+                    PreviouslyInfected = int.Parse(splitCSVList[i][5])
+
+                };
+                patientList.Add(patient);
+            }
+            
             return new string[0];
         }
         public static string DisplayVaccinationAgeOption(bool vaccinateUnder18)
