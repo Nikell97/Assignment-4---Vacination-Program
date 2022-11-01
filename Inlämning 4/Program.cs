@@ -17,6 +17,14 @@ namespace Vaccination
         public int HealthCareWorker;
         public int RiskGroup;
         public int PreviouslyInfected;
+
+        public void StandardizeID()
+        {
+            if (!IDNumber.StartsWith("1"))
+            {
+                IDNumber = "19" + IDNumber;
+            }
+        }
     }
     public class Program
     {
@@ -90,14 +98,15 @@ namespace Vaccination
                     Console.WriteLine("Indatafil: " + inputDataPath);
                     Console.WriteLine();
                     Console.WriteLine("Ange ny sökväg: ");
-                    inputDataPath = Console.ReadLine();
+                    ChangeInputDataPath();
                 }
                 else if (option == 4) // Change output data file path
                 {
                     Console.WriteLine("Utdatafil: " + outputDataPath);
                     Console.WriteLine();
                     Console.WriteLine("Ange ny sökväg: ");
-                    outputDataPath = Console.ReadLine();
+                    ChangeOutputDataPath();
+                    
                 }
                 else if (option == 5) // End program
                 {
@@ -140,8 +149,13 @@ namespace Vaccination
 
                 };
                 patientList.Add(patient);
+                
             }
-            
+            foreach (Patient p in patientList)
+            {
+                p.StandardizeID();
+            }
+
             return new string[0];
         }
         public static string DisplayVaccinationAgeOption(bool vaccinateUnder18)
@@ -156,6 +170,37 @@ namespace Vaccination
                 ageYesNo = "Nej";
             }
             return ageYesNo;
+        }
+        public static void ChangeInputDataPath()
+        {
+
+            string newInputDataPath = Console.ReadLine();
+            if (File.Exists(newInputDataPath))
+            {
+                inputDataPath = newInputDataPath;
+            }
+            else
+            {
+                Console.WriteLine("Kunde inte hitta filen vid angedd sökväg");
+            }
+            Console.ReadLine();
+        }
+        public static void ChangeOutputDataPath()
+        {
+            string newOutputPath = Console.ReadLine();
+            if (Directory.Exists(newOutputPath))
+            {
+                outputDataPath = newOutputPath;
+            }
+            else
+            {
+                Console.WriteLine("Kunde inte hitta mappen vid angedd sökväg");
+            }
+            if (File.Exists(newOutputPath))
+            {
+
+            }
+            // output data check if folder exists (not file), check methods Path, File, Directory ex.(C:\Windows\Temp\Vaccine) then use Directory.Exists
         }
 
         public static int ShowMenu(string prompt, IEnumerable<string> options)
