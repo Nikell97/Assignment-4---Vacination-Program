@@ -18,12 +18,17 @@ namespace Vaccination
         public int RiskGroup;
         public int PreviouslyInfected;
 
-        public void StandardizeID()
+        public void StandardizeID() 
         {
-            if (!IDNumber.StartsWith("1"))
+            if (!IDNumber.StartsWith("19") && IDNumber.Length <= 13)
             {
                 IDNumber = "19" + IDNumber;
             }
+            string shortenedID = IDNumber.Replace("-", "");
+            
+            string endOfID = shortenedID.Substring(8, 4);
+            shortenedID = shortenedID.Replace(endOfID, ""); 
+            IDNumber = shortenedID + "-" + endOfID;
         }
     }
     public class Program
@@ -184,6 +189,7 @@ namespace Vaccination
                 Console.WriteLine("Kunde inte hitta filen vid angedd sökväg");
             }
             Console.ReadLine();
+            Console.Clear();
         }
         public static void ChangeOutputDataPath()
         {
@@ -196,10 +202,32 @@ namespace Vaccination
             {
                 Console.WriteLine("Kunde inte hitta mappen vid angedd sökväg");
             }
-            if (File.Exists(newOutputPath))
-            {
 
+
+            if (!File.Exists(newOutputPath))
+            {
+                File.Create(newOutputPath);
             }
+            else if (File.Exists(newOutputPath))
+            {
+                
+                int option = ShowMenu("Filen finns redan vid angedd sökväg. Vill du skriva över den?", new[]
+                {
+                   "Ja",
+                   "Nej"
+                });
+
+                if (option == 0)
+                {
+                    File.Create(newOutputPath);
+                }
+                else if (option == 1)
+                {
+
+                }
+            }
+            Console.ReadLine();
+            Console.Clear();
             // output data check if folder exists (not file), check methods Path, File, Directory ex.(C:\Windows\Temp\Vaccine) then use Directory.Exists
         }
 
