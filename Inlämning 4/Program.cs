@@ -30,6 +30,7 @@ namespace Vaccination
             shortenedID = shortenedID.Replace(endOfID, ""); 
             IDNumber = shortenedID + "-" + endOfID;
         }
+        
     }
     public class Program
     {
@@ -76,7 +77,17 @@ namespace Vaccination
                     Console.WriteLine("Antal tillgänliga vaccindoser: " + dosesInStock);
                     Console.WriteLine();
                     Console.WriteLine("Ange nytt antal doser: ");
-                    dosesInStock = int.Parse(Console.ReadLine());
+                    int newDoses = int.Parse(Console.ReadLine());
+                    if (dosesInStock + newDoses >= 0)
+                    {
+                        dosesInStock = newDoses;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Antalet tillgängliga vaccindoser kan inte vara negativa.");
+                    }
+                    Console.ReadLine();
+                    Console.Clear();
                 }
                 else if (option == 2) // Change age limit
                 {
@@ -154,12 +165,15 @@ namespace Vaccination
 
                 };
                 patientList.Add(patient);
-                
             }
+
             foreach (Patient p in patientList)
             {
                 p.StandardizeID();
             }
+
+            var priorityOrder = patientList.OrderByDescending(p => p.HealthCareWorker).ThenBy(p => CalculateAge(p.IDNumber) >= 65).
+                ThenByDescending(p => CalculateAge(p.IDNumber)).ThenByDescending(p => p.RiskGroup);
 
             return new string[0];
         }
@@ -194,7 +208,7 @@ namespace Vaccination
         public static void ChangeOutputDataPath()
         {
             string newOutputPath = Console.ReadLine();
-            if (Directory.Exists(newOutputPath))
+            if (Directory.Exists(Path.GetDirectoryName(newOutputPath)))
             {
                 outputDataPath = newOutputPath;
             }
@@ -223,12 +237,21 @@ namespace Vaccination
                 }
                 else if (option == 1)
                 {
-
+                    Console.WriteLine("Sökväg sparades inte. Går tillbaka till huvudmeny.");
                 }
             }
             Console.ReadLine();
             Console.Clear();
             // output data check if folder exists (not file), check methods Path, File, Directory ex.(C:\Windows\Temp\Vaccine) then use Directory.Exists
+        }
+        public static int CalculateAge(string idNumber)
+        {
+            int age = 0;
+            int yearOfBirth = int.Parse(idNumber.Substring(0, 4));
+            int currentYear = new DateTime().Year;
+            age = currentYear - yearOfBirth;
+
+            return age;
         }
 
         public static int ShowMenu(string prompt, IEnumerable<string> options)
