@@ -20,12 +20,12 @@ namespace Vaccination
 
         public void StandardizeID()
         {
-            if (!IDNumber.StartsWith("19") && IDNumber.Length <= 13)
-            {
-                IDNumber = "19" + IDNumber;
-            }
             string shortenedID = IDNumber.Replace("-", "");
 
+            if (IDNumber.Length == 10)
+            {
+                shortenedID = "19" + shortenedID;
+            }
             string endOfID = shortenedID.Substring(8, 4);
             shortenedID = shortenedID.Replace(endOfID, "");
             IDNumber = shortenedID + "-" + endOfID;
@@ -183,8 +183,8 @@ namespace Vaccination
                 p.StandardizeID();
             }
 
-            var priorityOrder = patientList.OrderByDescending(p => p.HealthCareWorker).ThenBy(p => CalculateAge(p.IDNumber) >= 65).
-                ThenByDescending(p => CalculateAge(p.IDNumber)).ThenByDescending(p => p.RiskGroup);
+            var priorityOrder = patientList.OrderByDescending(p => p.HealthCareWorker).ThenByDescending(p => CalculateAge(p.IDNumber) >= 65)
+                .ThenByDescending(p => p.RiskGroup).ThenByDescending(p => CalculateAge(p.IDNumber));
 
             List<string> outputList = new List<string>();
             outputList = ProcessOutputList(priorityOrder);
@@ -477,15 +477,109 @@ namespace Vaccination
                 "8102032222,Efternamnsson,Eva,1,1,0"
             };
             Program.dosesInStock = 10;
-            bool vaccinateUnderAge18 = false;
+            Program.vaccinateAgeUnder18 = false;
 
             // Act
-            string[] output = Program.CreateVaccinationOrder(input, Program.dosesInStock, vaccinateUnderAge18);
+            string[] output = Program.CreateVaccinationOrder(input, Program.dosesInStock, Program.vaccinateAgeUnder18);
 
             // Assert
             Assert.AreEqual(output.Length, 2);
             Assert.AreEqual("19810203-2222,Efternamnsson,Eva,2", output[0]);
             Assert.AreEqual("19720906-1111,Elba,Idris,1", output[1]);
+        }
+        [TestMethod]
+        public void MixedAgesChildVaccinationFalse()
+        {
+            string[] input =
+            {
+                "20140518-1112,Mortensson,Matilda,0,0,0",
+                "19520812-1111,Högfäldt,Ulf,0,0,1",
+                "19920103-1113,Annasson,Anna,0,1,0"
+            };
+            Program.dosesInStock = 10;
+            Program.vaccinateAgeUnder18 = false;
+
+            string[] output = Program.CreateVaccinationOrder(input, Program.dosesInStock, Program.vaccinateAgeUnder18);
+
+            Assert.AreEqual(output.Length, 2);
+            Assert.AreEqual("19520812-1111,Högfäldt,Ulf,1", output[0]);
+            Assert.AreEqual("19920103-1113,Annasson,Anna,2", output[1]);
+        }
+        [TestMethod]
+        public void MixedAgesChildVaccinationTrue()
+        {
+            string[] input =
+            {
+                "20140518-1112,Mortensson,Matilda,0,0,0",
+                "19520812-1111,Högfäldt,Ulf,0,0,1",
+                "19920103-1113,Annasson,Anna,0,1,0"
+            };
+            Program.dosesInStock = 10;
+            Program.vaccinateAgeUnder18 = true;
+
+            string[] output = Program.CreateVaccinationOrder(input, Program.dosesInStock, Program.vaccinateAgeUnder18);
+
+            Assert.AreEqual(output.Length, 3);
+            Assert.AreEqual("19520812-1111,Högfäldt,Ulf,1", output[0]);
+            Assert.AreEqual("19920103-1113,Annasson,Anna,2", output[1]);
+            Assert.AreEqual("20140518-1112,Mortensson,Matilda,2", output[2]);
+        }
+        [TestMethod]
+        public void VariedIDNumberInput()
+        {
+            string[] input =
+            {
+                "201405181112,Mortensson,Matilda,0,0,0",
+                "5208121111,Högfäldt,Ulf,0,0,1",
+                "19920103-1113,Annasson,Anna,0,1,0"
+            };
+            Program.dosesInStock = 10;
+            Program.vaccinateAgeUnder18 = true;
+
+            string[] output = Program.CreateVaccinationOrder(input, Program.dosesInStock, Program.vaccinateAgeUnder18);
+
+            Assert.AreEqual(output.Length, 3);
+            Assert.AreEqual("19520812-1111,Högfäldt,Ulf,1", output[0]);
+            Assert.AreEqual("19920103-1113,Annasson,Anna,2", output[1]);
+            Assert.AreEqual("20140518-1112,Mortensson,Matilda,2", output[2]);
+        }
+        [TestMethod]
+        public void ChildInRiskGroup()
+        {
+            string[] input =
+            {
+                "201405181112,Mortensson,Matilda,0,1,0",
+                "5208121111,Högfäldt,Ulf,0,0,1",
+                "19920103-1113,Annasson,Anna,0,0,0"
+            };
+            Program.dosesInStock = 10;
+            Program.vaccinateAgeUnder18 = true;
+
+            string[] output = Program.CreateVaccinationOrder(input, Program.dosesInStock, Program.vaccinateAgeUnder18);
+
+            Assert.AreEqual(output.Length, 3);
+            Assert.AreEqual("19520812-1111,Högfäldt,Ulf,1", output[0]);
+            Assert.AreEqual("20140518-1112,Mortensson,Matilda,2", output[1]);
+            Assert.AreEqual("19920103-1113,Annasson,Anna,2", output[2]);
+        }
+        [TestMethod]
+        public void NotEnoughVaccines()
+        {
+            string[] input =
+            {
+                "201405181112,Mortensson,Matilda,0,1,0",
+                "5208121111,Högfäldt,Ulf,0,0,0",
+                "19920103-1113,Annasson,Anna,0,0,0"
+            };
+            Program.dosesInStock = 5;
+            Program.vaccinateAgeUnder18 = true;
+
+            string[] output = Program.CreateVaccinationOrder(input, Program.dosesInStock, Program.vaccinateAgeUnder18);
+
+            Assert.AreEqual(output.Length, 3);
+            Assert.AreEqual("19520812-1111,Högfäldt,Ulf,2", output[0]);
+            Assert.AreEqual("20140518-1112,Mortensson,Matilda,2", output[1]);
+            Assert.AreEqual("19920103-1113,Annasson,Anna,0", output[2]);
         }
     }
 }
