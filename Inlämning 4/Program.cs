@@ -157,6 +157,7 @@ namespace Vaccination
             List<string[]> splitCSVList = new List<string[]>();
             List<Patient> patientList = new List<Patient>();
 
+            //add error handling for missing or inncorrect inputCSV format
             foreach (string p in input)
             {
                 splitCSVList.Add(p.Split(','));
@@ -189,7 +190,7 @@ namespace Vaccination
             List<string> outputList = new List<string>();
             outputList = ProcessOutputList(priorityOrder);
 
-            string[] outputCSV = ConvertToCSVFormat(outputList, outputList.Count / 4);
+            string[] outputCSV = ConvertToCSVFormat(outputList, outputList.Count / 4); //explain the second parameter
             return outputCSV;
         }
 
@@ -319,7 +320,7 @@ namespace Vaccination
                             dosesInStock -= int.Parse(dosesForPatient);
                         };
                     }
-                }
+                } //look at making a method to cut down on the requisite code
                 else if (vaccinateAgeUnder18 == false)
                 {
                     if (CalculateAge(p.IDNumber) >= 18)
