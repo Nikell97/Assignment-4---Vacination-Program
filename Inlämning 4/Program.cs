@@ -186,6 +186,9 @@ namespace Vaccination
             var priorityOrder = patientList.OrderByDescending(p => p.HealthCareWorker).ThenBy(p => CalculateAge(p.IDNumber) >= 65).
                 ThenByDescending(p => CalculateAge(p.IDNumber)).ThenByDescending(p => p.RiskGroup);
 
+            List<string> outputList = new List<string>();
+            outputList = ProcessOutputList(priorityOrder);
+
             return new string[0];
         }
         public static string DisplayVaccinationAgeOption(bool vaccinateUnder18)
@@ -259,14 +262,16 @@ namespace Vaccination
         {
             int age = 0;
             int yearOfBirth = int.Parse(idNumber.Substring(0, 4));
-            int currentYear = new DateTime().Year;
+            DateTime now = DateTime.Today;
+            int currentYear = now.Year;
             age = currentYear - yearOfBirth;
 
             return age;
         }
-        public static List <string> ProcessOutputList (List <Patient> priorityOrder)
+        public static List <string> ProcessOutputList (IOrderedEnumerable <Patient> priorityOrder)
         {
             List<string> outputList = new List<string>();
+            string dosesForPatient = "";
             foreach (Patient p in priorityOrder)
             {
                 if (vaccinateAgeUnder18 == true)
@@ -274,6 +279,16 @@ namespace Vaccination
                     outputList.Add(p.IDNumber);
                     outputList.Add(p.LastName);
                     outputList.Add(p.FirstName);
+                    if (p.PreviouslyInfected == 0)
+                    {
+                        dosesForPatient = "2";
+                        outputList.Add(dosesForPatient);
+                    }
+                    else if (p.PreviouslyInfected == 1)
+                    {
+                        dosesForPatient = "1";
+                        outputList.Add(dosesForPatient);
+                    }
                 }
                 else if (vaccinateAgeUnder18 == false)
                 {
@@ -282,6 +297,16 @@ namespace Vaccination
                         outputList.Add(p.IDNumber);
                         outputList.Add(p.LastName);
                         outputList.Add(p.FirstName);
+                        if (p.PreviouslyInfected == 0)
+                        {
+                            dosesForPatient = "2";
+                            outputList.Add(dosesForPatient);
+                        }
+                        else if (p.PreviouslyInfected == 1)
+                        {
+                            dosesForPatient = "1";
+                            outputList.Add(dosesForPatient);
+                        }
                     }
                 }
             }
