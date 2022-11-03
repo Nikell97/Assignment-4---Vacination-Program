@@ -191,6 +191,8 @@ namespace Vaccination
 
             return new string[0];
         }
+
+        //processes bool to return string that gives a more comprehensible display to user 
         public static string DisplayVaccinationAgeOption(bool vaccinateUnder18)
         {
             string ageYesNo = "";
@@ -204,6 +206,8 @@ namespace Vaccination
             }
             return ageYesNo;
         }
+
+        //allows user to change the search path for the input data file
         public static void ChangeInputDataPath()
         {
 
@@ -219,6 +223,8 @@ namespace Vaccination
             Console.ReadLine();
             Console.Clear();
         }
+
+        //allows user to change the search path for the output data file
         public static void ChangeOutputDataPath()
         {
             string newOutputPath = Console.ReadLine();
@@ -256,8 +262,9 @@ namespace Vaccination
             }
             Console.ReadLine();
             Console.Clear();
-            // output data check if folder exists (not file), check methods Path, File, Directory ex.(C:\Windows\Temp\Vaccine) then use Directory.Exists
         }
+
+        //takes id number of a person and calculates how old they are based on the current year
         public static int CalculateAge(string idNumber)
         {
             int age = 0;
@@ -268,6 +275,8 @@ namespace Vaccination
 
             return age;
         }
+
+        //takes the sorted list of Patients and proccesses it to desired output format (IDNumber, LastName, FirstName, and number of doses per patient)
         public static List <string> ProcessOutputList (IOrderedEnumerable <Patient> priorityOrder)
         {
             List<string> outputList = new List<string>();
@@ -282,12 +291,30 @@ namespace Vaccination
                     if (p.PreviouslyInfected == 0)
                     {
                         dosesForPatient = "2";
-                        outputList.Add(dosesForPatient);
+                        if (dosesInStock - int.Parse(dosesForPatient) < 0)
+                        {
+                            dosesForPatient = "0";
+                            outputList.Add(dosesForPatient);
+                        }
+                        else
+                        {
+                            outputList.Add(dosesForPatient);
+                            dosesInStock -= int.Parse(dosesForPatient);
+                        }
                     }
                     else if (p.PreviouslyInfected == 1)
                     {
                         dosesForPatient = "1";
-                        outputList.Add(dosesForPatient);
+                        if (dosesInStock - int.Parse(dosesForPatient) < 0)
+                        {
+                            dosesForPatient = "0";
+                            outputList.Add(dosesForPatient);
+                        }
+                        else
+                        {
+                            outputList.Add(dosesForPatient);
+                            dosesInStock -= int.Parse(dosesForPatient);
+                        };
                     }
                 }
                 else if (vaccinateAgeUnder18 == false)
@@ -300,12 +327,30 @@ namespace Vaccination
                         if (p.PreviouslyInfected == 0)
                         {
                             dosesForPatient = "2";
-                            outputList.Add(dosesForPatient);
+                            if (dosesInStock - int.Parse(dosesForPatient) < 0)
+                            {
+                                dosesForPatient = "0";
+                                outputList.Add(dosesForPatient);
+                            }
+                            else
+                            {
+                                outputList.Add(dosesForPatient);
+                                dosesInStock -= int.Parse(dosesForPatient);
+                            };
                         }
                         else if (p.PreviouslyInfected == 1)
                         {
                             dosesForPatient = "1";
-                            outputList.Add(dosesForPatient);
+                            if (dosesInStock - int.Parse(dosesForPatient) < 0)
+                            {
+                                dosesForPatient = "0";
+                                outputList.Add(dosesForPatient);
+                            }
+                            else
+                            {
+                                outputList.Add(dosesForPatient);
+                                dosesInStock -= int.Parse(dosesForPatient);
+                            };
                         }
                     }
                 }
