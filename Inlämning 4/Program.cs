@@ -34,15 +34,15 @@ namespace Vaccination
     }
     public class Program
     {
+        public static int dosesInStock = 0;
+        public static bool vaccinateAgeUnder18 = false;
         public static string inputDataPath = @"C:\Windows\Temp\PatientInfo.csv";
         public static string outputDataPath = @"C:\Windows\Temp\VaccinationList.csv";
 
         public static void Main()
         {
             CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-            int dosesInStock = 0;
-            bool vaccinateAgeUnder18 = false;
-
+            
             Console.WriteLine("Välkommen!");
             Console.WriteLine();
 
@@ -152,6 +152,7 @@ namespace Vaccination
             {
                 splitCSVList.Add(p.Split(','));
             }
+
             for (int i = 0; i < splitCSVList.Count; i++)
             {
                 Patient patient = new Patient
@@ -164,6 +165,7 @@ namespace Vaccination
                     PreviouslyInfected = int.Parse(splitCSVList[i][5])
 
                 };
+                
                 patientList.Add(patient);
             }
 
@@ -252,6 +254,30 @@ namespace Vaccination
             age = currentYear - yearOfBirth;
 
             return age;
+        }
+        public static List <string> ProcessOutputList (List <Patient> priorityOrder)
+        {
+            List<string> outputList = new List<string>();
+            foreach (Patient p in priorityOrder)
+            {
+                outputList.Add(p.IDNumber);
+                outputList.Add(p.LastName);
+                outputList.Add(p.FirstName);
+
+                if (CalculateAge(p.IDNumber) < 18 && vaccinateAgeUnder18 == true)
+                {
+                    if (p.PreviouslyInfected == 0)
+                    {
+
+                    }
+                }
+                else
+                {
+
+                }
+            }
+
+            return outputList;
         }
 
         public static int ShowMenu(string prompt, IEnumerable<string> options)
