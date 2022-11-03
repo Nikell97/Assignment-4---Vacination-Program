@@ -78,14 +78,22 @@ namespace Vaccination
                     Console.WriteLine();
                     Console.WriteLine("Ange nytt antal doser: ");
                     int newDoses = int.Parse(Console.ReadLine());
-                    if (dosesInStock + newDoses >= 0)
+                    try
                     {
-                        dosesInStock = newDoses;
+                        if (dosesInStock + newDoses >= 0)
+                        {
+                            dosesInStock = newDoses;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Antalet tillgängliga vaccindoser kan inte vara negativa.");
+                        }
                     }
-                    else
+                    catch
                     {
-                        Console.WriteLine("Antalet tillgängliga vaccindoser kan inte vara negativa.");
+                        Console.WriteLine("Någonting gick fel. Bekräfta att du lägger in en siffra.");
                     }
+                    
                     Console.ReadLine();
                     Console.Clear();
                 }
@@ -260,20 +268,20 @@ namespace Vaccination
             List<string> outputList = new List<string>();
             foreach (Patient p in priorityOrder)
             {
-                outputList.Add(p.IDNumber);
-                outputList.Add(p.LastName);
-                outputList.Add(p.FirstName);
-
-                if (CalculateAge(p.IDNumber) < 18 && vaccinateAgeUnder18 == true)
+                if (vaccinateAgeUnder18 == true)
                 {
-                    if (p.PreviouslyInfected == 0)
-                    {
-
-                    }
+                    outputList.Add(p.IDNumber);
+                    outputList.Add(p.LastName);
+                    outputList.Add(p.FirstName);
                 }
-                else
+                else if (vaccinateAgeUnder18 == false)
                 {
-
+                    if (CalculateAge(p.IDNumber) >= 18)
+                    {
+                        outputList.Add(p.IDNumber);
+                        outputList.Add(p.LastName);
+                        outputList.Add(p.FirstName);
+                    }
                 }
             }
 
