@@ -18,19 +18,19 @@ namespace Vaccination
         public int RiskGroup;
         public int PreviouslyInfected;
 
-        public void StandardizeID() 
+        public void StandardizeID()
         {
             if (!IDNumber.StartsWith("19") && IDNumber.Length <= 13)
             {
                 IDNumber = "19" + IDNumber;
             }
             string shortenedID = IDNumber.Replace("-", "");
-            
+
             string endOfID = shortenedID.Substring(8, 4);
-            shortenedID = shortenedID.Replace(endOfID, ""); 
+            shortenedID = shortenedID.Replace(endOfID, "");
             IDNumber = shortenedID + "-" + endOfID;
         }
-        
+
     }
     public class Program
     {
@@ -42,7 +42,7 @@ namespace Vaccination
         public static void Main()
         {
             CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-            
+
             Console.WriteLine("Välkommen!");
             Console.WriteLine();
 
@@ -70,14 +70,15 @@ namespace Vaccination
                 if (option == 0) // Create prioritization list
                 {
                     string[] inputCSV = File.ReadAllLines(inputDataPath);
-                    CreateVaccinationOrder(inputCSV, dosesInStock, vaccinateAgeUnder18);
+                    string[] outputCSV = CreateVaccinationOrder(inputCSV, dosesInStock, vaccinateAgeUnder18);
+                    File.WriteAllLines(outputDataPath, outputCSV);
                 }
                 else if (option == 1) // Change number of doses
                 {
                     Console.WriteLine("Antal tillgänliga vaccindoser: " + dosesInStock);
                     Console.WriteLine();
                     Console.WriteLine("Ange nytt antal doser: ");
-                    
+
                     try
                     {
                         int newDoses = int.Parse(Console.ReadLine());
@@ -94,8 +95,7 @@ namespace Vaccination
                     {
                         Console.WriteLine("Någonting gick fel. Bekräfta att du lägger in en siffra.");
                     }
-                    
-                    Console.ReadLine();
+
                     Console.Clear();
                 }
                 else if (option == 2) // Change age limit
@@ -131,7 +131,7 @@ namespace Vaccination
                     Console.WriteLine();
                     Console.WriteLine("Ange ny sökväg: ");
                     ChangeOutputDataPath();
-                    
+
                 }
                 else if (option == 5) // End program
                 {
@@ -151,7 +151,7 @@ namespace Vaccination
         // input: the lines from a CSV file containing population information
         // doses: the number of vaccine doses available
         // vaccinateChildren: whether to vaccinate people younger than 18
-        
+
         public static string[] CreateVaccinationOrder(string[] input, int doses, bool vaccinateChildren)
         {
             List<string[]> splitCSVList = new List<string[]>();
@@ -174,7 +174,7 @@ namespace Vaccination
                     PreviouslyInfected = int.Parse(splitCSVList[i][5])
 
                 };
-                
+
                 patientList.Add(patient);
             }
 
@@ -189,7 +189,8 @@ namespace Vaccination
             List<string> outputList = new List<string>();
             outputList = ProcessOutputList(priorityOrder);
 
-            return new string[0];
+            string[] outputCSV = ConvertToCSVFormat(outputList, outputList.Count / 4);
+            return outputCSV;
         }
 
         //processes bool to return string that gives a more comprehensible display to user 
@@ -244,7 +245,7 @@ namespace Vaccination
             }
             else if (File.Exists(newOutputPath))
             {
-                
+
                 int option = ShowMenu("Filen finns redan vid angedd sökväg. Vill du skriva över den?", new[]
                 {
                    "Ja",
@@ -277,7 +278,9 @@ namespace Vaccination
         }
 
         //takes the sorted list of Patients and proccesses it to desired output format (IDNumber, LastName, FirstName, and number of doses per patient)
-        public static List <string> ProcessOutputList (IOrderedEnumerable <Patient> priorityOrder)
+        //also checks if there are enough vaccine doses in stock before assigning how many doses to give to a patient
+        //if there aren't enough doses patient is assigned 0 doses
+        public static List<string> ProcessOutputList(IOrderedEnumerable<Patient> priorityOrder)
         {
             List<string> outputList = new List<string>();
             string dosesForPatient = "";
@@ -354,9 +357,33 @@ namespace Vaccination
                         }
                     }
                 }
+                
             }
 
             return outputList;
+        }
+
+        //converts list into a string array in the CSV format
+        public static string[] ConvertToCSVFormat(List<string> outputList, int arrayLength)
+        {
+            string[] outputCSV = new string[arrayLength];
+            
+            int indexCounter = 0;
+
+            for (int i = 0; i < outputList.Count / 4; i++)
+            {
+                string patient = "";
+                for (int j = 0; j < 4; j++)
+                {
+                    patient = patient + outputList[indexCounter] + ",";
+                    
+                    indexCounter++;
+                }
+                string lastCommaRemoved = patient.Remove(patient.Length - 1, 1);
+                outputCSV[i] = lastCommaRemoved;
+            }
+
+            return outputCSV;
         }
 
         public static int ShowMenu(string prompt, IEnumerable<string> options)
@@ -449,11 +476,11 @@ namespace Vaccination
                 "19720906-1111,Elba,Idris,0,0,1",
                 "8102032222,Efternamnsson,Eva,1,1,0"
             };
-            int doses = 10;
-            bool vaccinateChildren = false;
+            Program.dosesInStock = 10;
+            bool vaccinateUnderAge18 = false;
 
             // Act
-            string[] output = Program.CreateVaccinationOrder(input, doses, vaccinateChildren);
+            string[] output = Program.CreateVaccinationOrder(input, Program.dosesInStock, vaccinateUnderAge18);
 
             // Assert
             Assert.AreEqual(output.Length, 2);
