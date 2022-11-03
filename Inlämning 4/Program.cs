@@ -77,9 +77,10 @@ namespace Vaccination
                     Console.WriteLine("Antal tillgänliga vaccindoser: " + dosesInStock);
                     Console.WriteLine();
                     Console.WriteLine("Ange nytt antal doser: ");
-                    int newDoses = int.Parse(Console.ReadLine());
+                    
                     try
                     {
+                        int newDoses = int.Parse(Console.ReadLine());
                         if (dosesInStock + newDoses >= 0)
                         {
                             dosesInStock = newDoses;
