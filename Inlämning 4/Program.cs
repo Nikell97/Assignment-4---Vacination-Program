@@ -14,22 +14,9 @@ namespace Vaccination
         public string IDNumber;
         public string FirstName;
         public string LastName;
-        public int HealthCareWorker;
+        public int HealthCareWorker; // mention in documentation that int is used instead of bool because of how they are used for the sorting of the list later in the program
         public int RiskGroup;
         public int PreviouslyInfected;
-
-        public void StandardizeID()
-        {
-            string shortenedID = IDNumber.Replace("-", "");
-
-            if (IDNumber.Length == 10)
-            {
-                shortenedID = "19" + shortenedID;
-            }
-            string endOfID = shortenedID.Substring(8, 4);
-            shortenedID = shortenedID.Replace(endOfID, "");
-            IDNumber = shortenedID + "-" + endOfID;
-        }
 
     }
     public class Program
@@ -71,7 +58,37 @@ namespace Vaccination
                 {
                     string[] inputCSV = File.ReadAllLines(inputDataPath);
                     string[] outputCSV = CreateVaccinationOrder(inputCSV, dosesInStock, vaccinateAgeUnder18);
-                    File.WriteAllLines(outputDataPath, outputCSV);
+                    if (outputCSV != null)
+                    {
+                        if (!File.Exists(outputDataPath))
+                        {
+                            File.Create(outputDataPath);
+                        }
+                        else if (File.Exists(outputDataPath))
+                        {
+                            int option2 = ShowMenu("Filen finns redan vid angedd sökväg. Vill du skriva över den?", new[]
+                            {
+                            "Ja",
+                            "Nej"
+                        });
+
+                            if (option2 == 0)
+                            {
+                                File.WriteAllLines(outputDataPath, outputCSV);
+                            }
+                            else if (option2 == 1)
+                            {
+                                Console.WriteLine("Prioritetsordning sparades inte. Går tillbaka till huvudmeny.");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Console.ReadLine();
+                    }
+
+                    Console.Clear();
+
                 }
                 else if (option == 1) // Change number of doses
                 {
@@ -100,22 +117,18 @@ namespace Vaccination
                 }
                 else if (option == 2) // Change age limit
                 {
-                    int option2 = ShowMenu("Ska personer under 18 vaccineras?", new[]
+                    int option3 = ShowMenu("Ska personer under 18 vaccineras?", new[]
                     {
                         "Ja",
                         "Nej"
                     });
-                    if (option2 == 0)
+                    if (option3 == 0)
                     {
                         vaccinateAgeUnder18 = true;
                     }
-                    else if (option2 == 1)
+                    else if (option3 == 1)
                     {
                         vaccinateAgeUnder18 = false;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Någonting gick fel, var god välj giltigt menyval");
                     }
                 }
                 else if (option == 3) // Change input data file path
@@ -137,10 +150,6 @@ namespace Vaccination
                 {
                     running = false;
                 }
-                else
-                {
-                    Console.WriteLine("Någonting gick fel, var god välj giltigt menyval");
-                }
             }
         }
 
@@ -156,12 +165,35 @@ namespace Vaccination
         {
             List<string[]> splitCSVList = new List<string[]>();
             List<Patient> patientList = new List<Patient>();
+            bool isOk = true;
 
-            //add error handling for missing or inncorrect inputCSV format
             foreach (string p in input)
             {
                 splitCSVList.Add(p.Split(','));
             }
+
+            foreach (string[] array in splitCSVList)
+            {
+                array[0] = StandardizeID(array[0]);
+            }
+
+            foreach (string[] array in splitCSVList)
+            {
+                try
+                {
+                    if (array[0].Length != 13 || !array[0].Contains('-') || array[1] == "" || array[2] == "" || array[3] != "0" && array[3] != "1"
+                        || array[4] != "0" && array[4] != "1" || array[5] != "0" && array[5] != "1")
+                    {
+                        throw new Exception("Ogiltigt värde upptäckt i indatafilen.");
+                    }
+                }
+                catch
+                {
+                    Console.WriteLine("Ogiltigt värde upptäckt i indatafilen.");
+                    isOk = false;
+                }
+            }
+            if (!isOk) return null;
 
             for (int i = 0; i < splitCSVList.Count; i++)
             {
@@ -173,15 +205,8 @@ namespace Vaccination
                     HealthCareWorker = int.Parse(splitCSVList[i][3]),
                     RiskGroup = int.Parse(splitCSVList[i][4]),
                     PreviouslyInfected = int.Parse(splitCSVList[i][5])
-
                 };
-
                 patientList.Add(patient);
-            }
-
-            foreach (Patient p in patientList)
-            {
-                p.StandardizeID();
             }
 
             var priorityOrder = patientList.OrderByDescending(p => p.HealthCareWorker).ThenByDescending(p => CalculateAge(p.IDNumber) >= 65)
@@ -190,11 +215,12 @@ namespace Vaccination
             List<string> outputList = new List<string>();
             outputList = ProcessOutputList(priorityOrder);
 
-            string[] outputCSV = ConvertToCSVFormat(outputList, outputList.Count / 4); //explain the second parameter
+
+            string[] outputCSV = ConvertToCSVFormat(outputList, outputList.Count / 4);
             return outputCSV;
         }
 
-        //processes bool to return string that gives a more comprehensible display to user 
+        //processes bool to return string that gives a more readable display to user 
         public static string DisplayVaccinationAgeOption(bool vaccinateUnder18)
         {
             string ageYesNo = "";
@@ -217,6 +243,7 @@ namespace Vaccination
             if (File.Exists(newInputDataPath))
             {
                 inputDataPath = newInputDataPath;
+                Console.WriteLine("Sökväg för indatafil ändrad.");
             }
             else
             {
@@ -246,7 +273,6 @@ namespace Vaccination
             }
             else if (File.Exists(newOutputPath))
             {
-
                 int option = ShowMenu("Filen finns redan vid angedd sökväg. Vill du skriva över den?", new[]
                 {
                    "Ja",
@@ -284,7 +310,6 @@ namespace Vaccination
         public static List<string> ProcessOutputList(IOrderedEnumerable<Patient> priorityOrder)
         {
             List<string> outputList = new List<string>();
-            string dosesForPatient = "";
             foreach (Patient p in priorityOrder)
             {
                 if (vaccinateAgeUnder18 == true)
@@ -292,35 +317,8 @@ namespace Vaccination
                     outputList.Add(p.IDNumber);
                     outputList.Add(p.LastName);
                     outputList.Add(p.FirstName);
-                    if (p.PreviouslyInfected == 0)
-                    {
-                        dosesForPatient = "2";
-                        if (dosesInStock - int.Parse(dosesForPatient) < 0)
-                        {
-                            dosesForPatient = "0";
-                            outputList.Add(dosesForPatient);
-                        }
-                        else
-                        {
-                            outputList.Add(dosesForPatient);
-                            dosesInStock -= int.Parse(dosesForPatient);
-                        }
-                    }
-                    else if (p.PreviouslyInfected == 1)
-                    {
-                        dosesForPatient = "1";
-                        if (dosesInStock - int.Parse(dosesForPatient) < 0)
-                        {
-                            dosesForPatient = "0";
-                            outputList.Add(dosesForPatient);
-                        }
-                        else
-                        {
-                            outputList.Add(dosesForPatient);
-                            dosesInStock -= int.Parse(dosesForPatient);
-                        };
-                    }
-                } //look at making a method to cut down on the requisite code
+                    outputList.Add(CalculateDosesForPatient(p.PreviouslyInfected));
+                }
                 else if (vaccinateAgeUnder18 == false)
                 {
                     if (CalculateAge(p.IDNumber) >= 18)
@@ -328,56 +326,64 @@ namespace Vaccination
                         outputList.Add(p.IDNumber);
                         outputList.Add(p.LastName);
                         outputList.Add(p.FirstName);
-                        if (p.PreviouslyInfected == 0)
-                        {
-                            dosesForPatient = "2";
-                            if (dosesInStock - int.Parse(dosesForPatient) < 0)
-                            {
-                                dosesForPatient = "0";
-                                outputList.Add(dosesForPatient);
-                            }
-                            else
-                            {
-                                outputList.Add(dosesForPatient);
-                                dosesInStock -= int.Parse(dosesForPatient);
-                            };
-                        }
-                        else if (p.PreviouslyInfected == 1)
-                        {
-                            dosesForPatient = "1";
-                            if (dosesInStock - int.Parse(dosesForPatient) < 0)
-                            {
-                                dosesForPatient = "0";
-                                outputList.Add(dosesForPatient);
-                            }
-                            else
-                            {
-                                outputList.Add(dosesForPatient);
-                                dosesInStock -= int.Parse(dosesForPatient);
-                            };
-                        }
+                        outputList.Add(CalculateDosesForPatient(p.PreviouslyInfected));
                     }
                 }
-                
             }
-
             return outputList;
         }
 
+        //determines how many doses of vaccine each patient should receive in the ProcessOutPutList method
+        //used to cut down on otherwise repetitive code
+        public static string CalculateDosesForPatient(int wasInfected)
+        {
+            string dosesForPatient = "";
+            if (wasInfected == 0)
+            {
+                dosesForPatient = "2";
+                if (dosesInStock - int.Parse(dosesForPatient) < 0)
+                {
+                    dosesForPatient = "0";
+                }
+                else
+                {
+                    Program.dosesInStock -= int.Parse(dosesForPatient);
+                }
+            }
+            else if (wasInfected == 1)
+            {
+                dosesForPatient = "1";
+                if (dosesInStock - int.Parse(dosesForPatient) < 0)
+                {
+                    dosesForPatient = "0";
+                }
+                else
+                {
+                    Program.dosesInStock -= int.Parse(dosesForPatient);
+                }
+            }
+            return dosesForPatient;
+        }
+
         //converts list into a string array in the CSV format
+        //second parameter determines the array length
+        //the method creates a string from the fist 4 indexes of the parameter list and adds it to the string array outputCSV
+        //it then repeats the process for the next 4 indexes etc
+        //the length of array outputCSV will therefore be 1/4th as long as the Count of outputList
         public static string[] ConvertToCSVFormat(List<string> outputList, int arrayLength)
         {
             string[] outputCSV = new string[arrayLength];
-            
+
+            //keeps track of the current index of outputList to add to the patient string
             int indexCounter = 0;
 
-            for (int i = 0; i < outputList.Count / 4; i++)
+            for (int i = 0; i < arrayLength; i++)
             {
                 string patient = "";
                 for (int j = 0; j < 4; j++)
                 {
                     patient = patient + outputList[indexCounter] + ",";
-                    
+
                     indexCounter++;
                 }
                 string lastCommaRemoved = patient.Remove(patient.Length - 1, 1);
@@ -385,6 +391,28 @@ namespace Vaccination
             }
 
             return outputCSV;
+        }
+
+        public static string StandardizeID(string idNumber)
+        {
+            try
+            {
+                string shortenedID = idNumber.Replace("-", "");
+
+                if (idNumber.Length == 10)
+                {
+                    shortenedID = "19" + shortenedID;
+                }
+                string endOfID = shortenedID.Substring(8, 4);
+                shortenedID = shortenedID.Replace(endOfID, "");
+                idNumber = shortenedID + "-" + endOfID;
+                return idNumber;
+            }
+            catch
+            {
+                return idNumber;
+            }
+
         }
 
         public static int ShowMenu(string prompt, IEnumerable<string> options)
