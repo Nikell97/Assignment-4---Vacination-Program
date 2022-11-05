@@ -63,6 +63,8 @@ namespace Vaccination
                         if (!File.Exists(outputDataPath))
                         {
                             File.Create(outputDataPath);
+                            File.WriteAllLines(outputDataPath, outputCSV);
+                            Console.WriteLine("Resultatet sparades i " + outputDataPath);
                         }
                         else if (File.Exists(outputDataPath))
                         {
@@ -75,6 +77,7 @@ namespace Vaccination
                             if (option2 == 0)
                             {
                                 File.WriteAllLines(outputDataPath, outputCSV);
+                                Console.WriteLine("Resultatet sparades i " + outputDataPath);
                             }
                             else if (option2 == 1)
                             {
@@ -84,9 +87,10 @@ namespace Vaccination
                     }
                     else
                     {
-                        Console.ReadLine();
+                        Console.ReadLine(); // ReadLine here so that user can see error messages for wrong format in input CSV file
                     }
 
+                    Console.ReadLine();
                     Console.Clear();
 
                 }
@@ -106,11 +110,13 @@ namespace Vaccination
                         else
                         {
                             Console.WriteLine("Antalet tillgängliga vaccindoser kan inte vara negativa.");
+                            Console.ReadLine();
                         }
                     }
                     catch
                     {
                         Console.WriteLine("Någonting gick fel. Bekräfta att du lägger in en siffra.");
+                        Console.ReadLine();
                     }
 
                     Console.Clear();
@@ -177,6 +183,7 @@ namespace Vaccination
                 array[0] = StandardizeID(array[0]);
             }
 
+            //error handling for incorrect values in input CSV
             foreach (string[] array in splitCSVList)
             {
                 try
@@ -184,7 +191,7 @@ namespace Vaccination
                     if (array[0].Length != 13 || !array[0].Contains('-') || array[1] == "" || array[2] == "" || array[3] != "0" && array[3] != "1"
                         || array[4] != "0" && array[4] != "1" || array[5] != "0" && array[5] != "1")
                     {
-                        throw new Exception("Ogiltigt värde upptäckt i indatafilen.");
+                        throw new Exception("Invalid CSV file format");
                     }
                 }
                 catch
@@ -305,8 +312,6 @@ namespace Vaccination
         }
 
         //takes the sorted list of Patients and proccesses it to desired output format (IDNumber, LastName, FirstName, and number of doses per patient)
-        //also checks if there are enough vaccine doses in stock before assigning how many doses to give to a patient
-        //if there aren't enough doses patient is assigned 0 doses
         public static List<string> ProcessOutputList(IOrderedEnumerable<Patient> priorityOrder)
         {
             List<string> outputList = new List<string>();
@@ -334,6 +339,8 @@ namespace Vaccination
         }
 
         //determines how many doses of vaccine each patient should receive in the ProcessOutPutList method
+        //also checks if there are enough vaccine doses in stock before assigning how many doses to give to a patient
+        //if there aren't enough doses patient is assigned 0 doses
         //used to cut down on otherwise repetitive code
         public static string CalculateDosesForPatient(int wasInfected)
         {
@@ -368,7 +375,7 @@ namespace Vaccination
         //converts list into a string array in the CSV format
         //second parameter determines the array length
         //the method creates a string from the fist 4 indexes of the parameter list and adds it to the string array outputCSV
-        //it then repeats the process for the next 4 indexes etc
+        //it then repeats the process for the next 4 indexes of the parameter list etc
         //the length of array outputCSV will therefore be 1/4th as long as the Count of outputList
         public static string[] ConvertToCSVFormat(List<string> outputList, int arrayLength)
         {
