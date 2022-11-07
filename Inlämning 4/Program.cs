@@ -14,7 +14,7 @@ namespace Vaccination
         public string IDNumber;
         public string FirstName;
         public string LastName;
-        public int HealthCareWorker; // mention in documentation that int is used instead of bool because of how they are used for the sorting of the list later in the program
+        public int HealthCareWorker; 
         public int RiskGroup;
         public int PreviouslyInfected;
 
